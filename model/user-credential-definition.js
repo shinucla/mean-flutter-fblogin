@@ -15,10 +15,10 @@ module.exports = function (Sequelize) {
 
            instanceMethods: {
              validPassword: function(password) {
-               return AuthoringManager.comparePasswordHash(password, this.password_hash);
+               return AuthoringService.comparePasswordHash(password, this.password_hash);
              },
              setAccessToken: function(val) {
-               this.access_token_encode = AuthoringManager.encode(val);
+               this.access_token_encode = AuthoringService.encode(val);
                return this;
              },
            }

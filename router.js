@@ -5,7 +5,7 @@
  */
 module.exports = function(app) {
   app.apiRequiredLogin = async function(req, res, next) {
-    AuthoringManager.verifyToken(req.headers.jwt, (err, user) => {
+    AuthoringService.verifyToken(req.headers.jwt, (err, user) => {
       if (!err) {
         req.user = user;
         next();

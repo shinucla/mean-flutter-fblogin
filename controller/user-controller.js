@@ -1,13 +1,12 @@
 'use strict';
 
 /*
- * TODO: use FacebookServiceManager
+ * TODO: 
  */
 module.exports = function(app) {
   var fs = require('fs');
   var request = require('request');
-  var FB_API_VER = 'v3.2';
-  var FB_API_URL = 'https://graph.facebook.com/' + FB_API_VER + '/';
+  var FB = require('../service/facebook-service');
 
   // ------------------------------------------------------------
 
@@ -19,7 +18,7 @@ module.exports = function(app) {
                     'email': req.body.email,
                     'password': req.body.password };
 
-      AuthoringManager.signupByEmail(json, function(err, jwt) {
+      AuthoringService.signupByEmail(json, function(err, jwt) {
         if (err) return next(err);
         res.status(200).send({ data: { jwt: jwt }});
       });
@@ -36,7 +35,7 @@ module.exports = function(app) {
                     'password': req.body.password,
                     'fbAccessToken': req.body.fbAccessToken };
 
-      AuthoringManager.loginByEmail(json, function(err, jwt) {
+      AuthoringService.loginByEmail(json, function(err, jwt) {
         if (err) return next(err);
         res.status(200).send({ data: { jwt: jwt }});
       });
@@ -50,31 +49,32 @@ module.exports = function(app) {
       var token = req.body.token;
       var path = FB_API_URL + 'me?fields=first_name,last_name,email&access_token=' + token;
 
-      request
-        .get({ url: path, json: true }, async (err, response, json) => {
-          if (err || !!json.error) {
-            next(new Error((json || { error: {}}).error.message || err || 'Facebook Api Error'));
+      new FB().get('me',
+                   new FB.Params().setParam('fields','first_name,last_name,email'),
+                   token,
+                   (err, json) => {
+                     if (err) {
+                       next(err);
 
-          } else {
-            var existing = await Domain.UserProfile.findOne({ where: { email: json.email }});
-            var cre = null === existing ? null : await Domain.UserCredential.findOne({ where: { user_id: existing.id }});
+                     } else {
+                       var existing = await Domain.UserProfile.findOne({ where: { email: json.email }});
+                       var cre = null === existing ? null : await Domain.UserCredential.findOne({ where: { user_id: existing.id }});
 
-            if (null === existing) {
-              AuthoringManager.signupByFacebook({ firstName: json.first_name,
-                                                  lastName: json.last_name,
-                                                  email: json.email,
-                                                  token: token },
-                                                (err, jwt) => {
-                                                  if (err) return next(err);
-                                                  res.status(200).send({ data: { jwt: jwt }});
-                                                });
-            } else {
-              await cre.setAccessToken(token).save();
-              res.status(200).send({ data: { jwt: cre.jwt }});
-            }
-          }
-        });
-
+                       if (null === existing) {
+                         AuthoringService.signupByFacebook({ firstName: json.first_name,
+                                                             lastName: json.last_name,
+                                                             email: json.email,
+                                                             token: token },
+                                                           (err, jwt) => {
+                                                             if (err) return next(err);
+                                                             res.status(200).send({ data: { jwt: jwt }});
+                                                           });
+                       } else {
+                         await cre.setAccessToken(token).save();
+                         res.status(200).send({ data: { jwt: cre.jwt }});
+                       }
+                     }
+                   });
     });
 
   // ------------------------------------------------------------
@@ -88,7 +88,7 @@ module.exports = function(app) {
       var cre = await Domain.UserCredential.forUser(existing);
 
       if (null === existing) {
-        AuthoringManager.signupByGuest({ firstName: 'Guest',
+        AuthoringService.signupByGuest({ firstName: 'Guest',
                                          lastName: 'Guest',
                                          email: deviceId },
                                        (err, jwt) => {

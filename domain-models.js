@@ -88,8 +88,8 @@ async function TransactionErrorHandlerMiddleware(err, req, res, next) {
 
 // ------------------------------------------------------------
 
-var UserProfile = defineModel('user_profile', require('./model/UserProfileDefinition')(Sequelize));
-var UserCredential = defineModel('user_credential', require('./model/UserCredentialDefinition')(Sequelize));
+var UserProfile = defineModel('user_profile', require('./model/user-profile-definition')(Sequelize));
+var UserCredential = defineModel('user_credential', require('./model/user-credential-definition')(Sequelize));
 
 async function init() {
   await UserProfile.sync();

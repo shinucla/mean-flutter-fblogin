@@ -24,7 +24,7 @@ function decode(text) {
 
 // ------------------------------------------------------------
 
-module.exports = class AuthoringManager {
+module.exports = class AuthoringService {
   constructor() { /* ... */ }
 
   async signupByEmail(json, callback) {

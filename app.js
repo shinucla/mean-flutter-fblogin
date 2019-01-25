@@ -76,7 +76,7 @@ var session           = require('express-session');
 // Global:
 Config = require('./config.js');
 Domain = require('./domain-models.js')
-AuthoringManager = new (require('./manager/AuthoringManager'))();
+AuthoringService = new (require('./service/authoring-service'))();
 
 // Config:
 Domain.init();
