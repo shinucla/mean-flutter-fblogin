@@ -47,12 +47,11 @@ module.exports = function(app) {
     .route('/user/api/loginByFacebook')
     .post(function(req, res, next) {
       var token = req.body.token;
-      var path = FB_API_URL + 'me?fields=first_name,last_name,email&access_token=' + token;
-
+      
       new FB().get('me',
                    new FB.Params().setParam('fields','first_name,last_name,email'),
                    token,
-                   (err, json) => {
+                   async (err, json) => {
                      if (err) {
                        next(err);
 
